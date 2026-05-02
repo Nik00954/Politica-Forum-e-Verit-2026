@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Forum: Politica & Verità 2026</title>
+    <style>
+        :root {
+            --C-color: #1d9bf0; --H-color: #71767b; --L-color: #00ba7c;
+            --R-color: #ffd700; --G-color: #a855f7;
+            --bg-dark: #000000; --panel-bg: #16181c;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-dark); color: #eff3f4; padding: 20px; }
+        .container { max-width: 850px; margin: auto; }
+        
+        .header-controls { 
+            position: sticky; top: 0; z-index: 1000; background: rgba(0,0,0,0.9); 
+            padding: 20px 0; border-bottom: 1px solid #333; backdrop-filter: blur(10px);
+        }
+
+        .main-buttons { display: flex; gap: 15px; margin-bottom: 20px; justify-content: center; }
+        .filosofi-grid { display: flex; justify-content: center; gap: 15px; }
+        
+        .avatar-wrapper { position: relative; cursor: help; }
+        .avatar { 
+            width: 70px; height: 70px; border-radius: 50%; border: 2px solid #444;
+            display: flex; align-items: center; justify-content: center;
+            transition: 0.3s; opacity: 0.6;
+            background: #222; overflow: hidden;
+        }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+        .avatar.active { opacity: 1; border-color: white; box-shadow: 0 0 20px currentColor; transform: scale(1.15); }
+
+        .avatar-wrapper::after {
+            content: attr(data-quote);
+            position: absolute; top: 110%; left: 50%; transform: translateX(-50%);
+            background: #fff; color: #000; padding: 6px 12px; border-radius: 4px;
+            font-size: 0.75em; font-weight: bold; white-space: nowrap; opacity: 0; 
+            pointer-events: none; transition: 0.3s; z-index: 100;
+        }
+        .avatar-wrapper:hover::after { opacity: 1; }
+
+        .progress-container { width: 100%; background: #333; height: 4px; margin-top: 15px; }
+        #progress-bar { width: 0%; height: 100%; background: var(--C-color); transition: width 0.2s linear; }
+
+        button { cursor: pointer; border: none; border-radius: 25px; font-weight: bold; transition: 0.2s; }
+        .btn-main-play { background: #fff; color: #000; padding: 12px 25px; }
+        .btn-main-stop { background: #c0392b; color: white; padding: 12px 25px; }
+
+        h2 { border-bottom: 1px solid #333; padding: 25px 0 10px 0; color: var(--C-color); font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; }
+        .scena { background: var(--bg-dark); padding: 15px; border-bottom: 1px solid #222; transition: 0.4s; }
+        .scena:not(.C) { margin-left: 45px; border-left: 1px solid #333; }
+        .scena.highlight { background: #16181c; border-left: 4px solid var(--C-color); }
+        
+        .label { font-weight: bold; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; font-size: 0.95em; }
+        .text-content { font-size: 1.05em; line-height: 1.5; color: #d6d9db; margin-bottom: 15px; }
+
+        .controls-row { display: flex; gap: 8px; align-items: center; opacity: 0.3; }
+        .scena:hover .controls-row { opacity: 1; }
+        
+        .btn-small { padding: 6px 12px; font-size: 0.7em; background: #202327; color: #1d9bf0; border: 1px solid #333; }
+        .btn-rec.recording { background: #f00; color: white; animation: flash 1s infinite; }
+        audio { height: 28px; filter: invert(100%); opacity: 0.7; }
+
+        .poll-section { margin-top: 50px; padding: 30px; background: #16181c; border-radius: 15px; text-align: center; border: 1px solid #333; }
+        .poll-options { display: flex; justify-content: center; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .poll-btn { padding: 10px 20px; background: #202327; color: #fff; border: 1px solid #444; border-radius: 20px; }
+        #voto-risultato { margin-top: 20px; font-style: italic; color: var(--C-color); }
+
+        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-controls">
+        <div class="main-buttons">
+            <button class="btn-main-play" onclick="playAll()">▶ AVVIA DIBATTITO</button>
+            <button class="btn-main-stop" onclick="stopAll()">■ STOP</button>
+        </div>
+
+        <div class="filosofi-grid">
+            <div class="avatar-wrapper" data-quote="Host">
+                <div id="av-C" class="avatar" style="color: var(--C-color); font-size: 0.7em; font-weight: bold;">HOST</div>
+            </div>
+            
+            <div class="avatar-wrapper" data-quote="Hobbes: Ordine assoluto">
+                <div id="av-H" class="avatar">
+                    <img src="https://d3wo5wojvuv7l.cloudfront.net/t_square_limited_720/images.spreaker.com/original/28e7d15f4398627ba4b658dfad06b46c.jpg" alt="Hobbes">
+                </div>
+            </div>
+
+            <div class="avatar-wrapper" data-quote="Locke: Proprietà e Libertà">
+                <div id="av-L" class="avatar">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d1/JohnLocke.png" alt="Locke">
+                </div>
+            </div>
+
+            <div class="avatar-wrapper" data-quote="Rousseau: Volontà Generale">
+                <div id="av-R" class="avatar">
+                    <img src="https://cdn.studenti.stbm.it/images/2016/11/14/rousseau-2-orig.jpeg" alt="Rousseau">
+                </div>
+            </div>
+
+            <div class="avatar-wrapper" data-quote="Grozio: Diritto Internazionale">
+                <div id="av-G" class="avatar">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Michiel_Jansz_van_Mierevelt_-_Hugo_Grotius.jpg/250px-Michiel_Jansz_van_Mierevelt_-_Hugo_Grotius.jpg" alt="Grozio">
+                </div>
+            </div>
+        </div>
+        <div class="progress-container"><div id="progress-bar"></div></div>
+    </div>
+
+    <div id="script-container"></div>
+
+    <div class="poll-section">
+        <h3>CHI HA VINTO IL DIBATTITO?</h3>
+        <div class="poll-options">
+            <button class="poll-btn" onclick="vota('H')">@Il_Leviatano</button>
+            <button class="poll-btn" onclick="vota('L')">@JohnProprietà</button>
+            <button class="poll-btn" onclick="vota('R')">@JeanJacques</button>
+            <button class="poll-btn" onclick="vota('G')">@UgoGrozio</button>
+        </div>
+        <div id="voto-risultato"></div>
+    </div>
+</div>
+
+<script>
+    const copione = [
+        {s: "Introduzione", p: "C", t: "Benvenuti a tutti! Oggi abbiamo in chat i giganti della filosofia moderna. Perché abbiamo creato lo Stato? Cominciamo con le presentazioni.", a: "host 1.mp3"},
+        {p: "H", t: "Siete violenti per natura, senza un Capo assoluto vi uccidereste per un parcheggio. La sovranità deve essere una e indivisibile.", a: "Hobbes 1 mod.mp3"},
+        {p: "L", t: "Esagerato! Ci uniamo solo per proteggere i nostri diritti naturali: vita, libertà e proprietà. Il sovrano è un semplice dipendente del popolo.", a: "Locke 1.mp3"},
+        {p: "R", t: "La società è un imbroglio dei ricchi. 'L'uomo nasce libero ma è ovunque in catene'. La sovranità appartiene solo alla Volontà Generale.", a: "Rousseau 1.mp3"},
+        {p: "G", t: "La società è dettata dalla nostra natura razionale, esistono regole universali e la sovranità serve a far rispettare i patti tra gli uomini.", a: "Grozio 1.mp3"},
+        
+        {s: "Scenario: Il Caso Trump", p: "C", t: "Domanda da @Anonimo: 'Cosa ne pensate di Trump?' È il leader che spacca tutto.", a: "host 2.mp3"},
+        {p: "H", t: "Un vero sovrano deve farsi temere, non deve piacere. Ma se mette in dubbio le istituzioni, sta segando il ramo su cui è seduto. È Pericoloso.", a: "Hobbes 2 mod.mp3"},
+        {p: "L", t: "Nessuno è sopra la legge. Se un leader calpesta i diritti, il popolo deve poterlo cacciare via. La libertà viene prima.", a: "Locke 2.mp3"},
+        {p: "R", t: "È il sintomo di una società malata. Trump rappresenta l'interesse privato contro il bene comune, e finché voterete il primo che passa, avrete leader così.", a: "Rousseau 2.mp3"},
+        
+        {s: "Scenario: Chip Cerebrali e Bio-Hacking", p: "C", t: "Domanda caldissima da @TechNerd: 'Se diventasse possibile installare un chip nel cervello per essere più intelligenti, lo Stato dovrebbe renderli obbligatori per tutti o vietarli?'", a: "host 3.mp3"},
+        {p: "G", t: "La natura umana ha dei limiti razionali, e alterare il corpo con la tecnologia richiede un nuovo diritto naturale. Non possiamo rischiare di perdere la nostra identità per un aggiornamento hardware.", a: "Grozio 2.mp3"},
+        {p: "H", t: "Se un chip rende i cittadini più obbedienti e intelligenti, il Sovrano dovrebbe renderlo obbligatorio. Un popolo potenziato è uno Stato più forte, ordinato e sicuro.", a: "Hobbes 3 mod.mp3"},
+        {p: "R", t: "Ecco l'ultima ineguaglianza! I ricchi diventeranno dei semidei e i poveri resteranno schiavi biologici. Rappresenterebbe la fine definitiva della volontà generale.", a: "Rousseau 3.mp3"},
+        {p: "L", t: "Ma siamo matti? Il mio corpo è la mia proprietà primaria. Lo Stato non può obbligarmi a installare nulla, la libertà di restare 'naturali' è un diritto inalienabile.", a: "Locke 3.mp3"},
+        
+        {s: "Scenario: Libertà e Social Media", p: "C", t: "Elon Musk e la libertà totale su X: fa bene o servirebbe la censura?", a: "host 4.mp3"},
+        {p: "H", t: "La libertà di parola è caos. Lo Stato deve decidere cosa si pubblica per evitare la guerra civile. Meglio censurati che in guerra.", a: "Hobbes 4 mod.mp3"},
+        {p: "L", t: "No! La verità emerge col confronto. Certo, chi istiga alla violenza va fermato, ma la censura preventiva è roba da tiranni.", a: "Locke 4.mp3"},
+        {p: "R", t: "Se la stampa è dei miliardari, non è libera. La vera libertà ci sarà solo quando parleremo per il bene della patria e non per fare visualizzazioni.", a: "Rousseau 4.mp3"},
+        {p: "G", t: "Libertà senza responsabilità è abuso. Se insulti o menti, danneggi l'ordine, e ne rispondi davanti a un giudice. Usate la ragione.", a: "Grozio 3.mp3"}
+    ];
+
+    const nomi = {C: "Conduttore", H: "@Il_Leviatano", L: "@JohnProprietà", R: "@JeanJacques", G: "@UgoGrozio"};
+    const container = document.getElementById('script-container');
+    
+    copione.forEach((item, i) => {
+        if(item.s) {
+            const h2 = document.createElement('h2'); h2.innerText = item.s; container.appendChild(h2);
+        }
+        const div = document.createElement('div');
+        div.className = `scena ${item.p}`;
+        div.id = `scena-${i}`;
+        div.innerHTML = `
+            <span class="label" style="color: var(--${item.p}-color)">${nomi[item.p]}</span>
+            <p class="text-content">${item.t}</p>
+            <div class="controls-row">
+                <button class="btn-small" onclick="manualPlay(${i})">PLAY AUDIO</button>
+                <button class="btn-small btn-rec" id="rec-${i}" onclick="toggleRec(${i})">REC</button>
+                <button class="btn-small" onclick="document.getElementById('file-${i}').click()">FILE</button>
+                <input type="file" id="file-${i}" accept="audio/*" style="display:none" onchange="importaAudio(event, ${i})">
+                <audio id="audio-${i}" src="audio/${item.a}" controls></audio>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+
+    function vota(fil) {
+        const m = {
+            H: "Hai scelto la sicurezza del Leviatano!",
+            L: "La tua proprietà è al sicuro con Locke.",
+            R: "Rousseau approva il tuo spirito civico!",
+            G: "Grozio ammira la tua razionalità."
+        };
+        document.getElementById('voto-risultato').innerText = m[fil];
+    }
+
+    let isPlaying = false;
+    let mediaRecorder;
+    let audioChunks = [];
+
+    function stopAll() {
+        isPlaying = false;
+        window.speechSynthesis.cancel();
+        document.querySelectorAll('audio').forEach(a => { a.pause(); a.currentTime = 0; });
+        document.querySelectorAll('.avatar, .scena').forEach(el => el.classList.remove('active', 'highlight'));
+    }
+
+    function manualPlay(i) { 
+        stopAll(); 
+        const player = document.getElementById(`audio-${i}`);
+        evidenzia(i);
+        player.play().catch(() => {
+            const msg = new SpeechSynthesisUtterance(copione[i].t);
+            msg.lang = 'it-IT';
+            msg.onend = () => spegni();
+            window.speechSynthesis.speak(msg);
+        });
+        player.onended = () => spegni();
+    }
+
+    async function playAll() {
+        if(isPlaying) return;
+        stopAll();
+        isPlaying = true;
+        for (let i = 0; i < copione.length; i++) {
+            if(!isPlaying) break;
+            evidenzia(i);
+            const player = document.getElementById(`audio-${i}`);
+            await new Promise((res) => {
+                player.play().then(() => {
+                    player.onended = res;
+                }).catch(() => {
+                    const msg = new SpeechSynthesisUtterance(copione[i].t);
+                    msg.lang = 'it-IT';
+                    msg.onend = res;
+                    window.speechSynthesis.speak(msg);
+                });
+            });
+        }
+        isPlaying = false;
+        spegni();
+    }
+
+    function evidenzia(i) {
+        document.querySelectorAll('.avatar').forEach(a => a.classList.remove('active'));
+        document.querySelectorAll('.scena').forEach(s => s.classList.remove('highlight'));
+        const avId = `av-${copione[i].p}`;
+        if(document.getElementById(avId)) document.getElementById(avId).classList.add('active');
+        const scenaEl = document.getElementById(`scena-${i}`);
+        scenaEl.classList.add('highlight');
+        scenaEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('progress-bar').style.width = ((i + 1) / copione.length * 100) + "%";
+    }
+
+    function spegni() { document.querySelectorAll('.avatar').forEach(a => a.classList.remove('active')); }
+
+    async function toggleRec(i) {
+        const btn = document.getElementById(`rec-${i}`);
+        if (!mediaRecorder || mediaRecorder.state === "inactive") {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(audioChunks, { type: 'audio/mpeg' });
+                document.getElementById(`audio-${i}`).src = URL.createObjectURL(blob);
+            };
+            mediaRecorder.start();
+            btn.classList.add('recording');
+        } else {
+            mediaRecorder.stop();
+            btn.classList.remove('recording');
+        }
+    }
+
+    function importaAudio(event, i) {
+        const file = event.target.files[0];
+        if(file) document.getElementById(`audio-${i}`).src = URL.createObjectURL(file);
+    }
+</script>
+
+</body>
+</html>
